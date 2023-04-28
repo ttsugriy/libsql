@@ -14,23 +14,41 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: setup msys2 for windows
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: mingw-w64-x86_64-toolchain mingw-w64-x86_64-sqlite3
+          msystem: MINGW64
+          path-type: inherit
+
       - uses: dtolnay/rust-toolchain@1.65.0
    
-      # - name: configure with Wasm
-      #   run: |
-      #     ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
-
-      - name: for test do not build (unix)
+      - name: configure with Wasm (linux/macos)
         if: matrix.os != 'windows-latest'
         run: |
-          mkdir -p .libs
-          echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
+          ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
 
-      - name: for test do not build (windows)
+      - name: configure with Wasm (windows)
         if: matrix.os == 'windows-latest'
         run: |
-          md .libs
-          echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
+          ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
+        shell: msys2 {0}
+  
+
+      # - name: for test do not build (unix)
+      #   if: matrix.os != 'windows-latest'
+      #   run: |
+      #     mkdir -p .libs
+      #     echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
+
+      # - name: for test do not build (windows)
+      #   if: matrix.os == 'windows-latest'
+      #   run: |
+      #     md .libs
+      #     echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
 
       - name: Zip artifact for deployment (linux/maxos)
         if: matrix.os != 'windows-latest'
