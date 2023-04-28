@@ -20,8 +20,16 @@ jobs:
       #   run: |
       #     ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
 
-      - name: for test do not build
+      - name: for test do not build (unix)
+        if: matrix.os != 'windows-latest'
         run: |
+          mkdir -p .libs
+          echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
+
+      - name: for test do not build (windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          md .libs
           echo "test ${{ matrix.os }}" >> .libs/liblibsql_wasm.a
 
       - name: Zip artifact for deployment (linux/maxos)
