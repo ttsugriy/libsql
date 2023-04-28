@@ -10,7 +10,8 @@ jobs:
     strategy:
       matrix:
         #os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [ubuntu-latest, macos-latest]
+        #os: [ubuntu-latest, macos-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -24,6 +25,11 @@ jobs:
           msystem: MINGW64
           path-type: inherit
 
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: matrix.os == 'windows-latest'
+        with:
+          arch: x64
+  
       - uses: dtolnay/rust-toolchain@1.65.0
    
       - name: configure with Wasm (linux/macos)
