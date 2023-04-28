@@ -1,0 +1,62 @@
+name: Build 
+
+on:
+  push:
+    branches: [ "release-pipeline" ]
+
+jobs:
+  build:
+    # Build on Linux, Windows and MacOS
+    strategy:
+      matrix:
+        #os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@1.65.0
+   
+      - name: configure with Wasm
+        run: |
+          ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
+
+      - name: Zip artifact for deployment (linux/maxos)
+        if: matrix.os != 'windows-latest'
+        run: zip libsql-wasm-${{ matrix.os }}.zip .libs/liblibsql_wasm.a 
+
+      - name: Zip artifact for deployment (windows)
+        if: matrix.os == 'windows-latest'
+        run: Compress-Archive .libs/liblibsql_wasm.a libsql-wasm-${{ matrix.os }}.zip
+  
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libsql-wasm-${{ matrix.os }}
+          path: libsql-wasm-${{ matrix.os }}.zip
+          retention-days: 1
+
+  release:
+    name: "Release"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # We don't need the repo, grab all artifacts from the build stage
+      # The plugin puts each artifact in a folder of `artifactname`
+      - uses: actions/download-artifact@v3
+
+      - name: Display fetched artifacts
+        run: ls -Rha
+        
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: "${{ secrets.GH_TOKEN }}"
+          #body_path: RELEASE_NOTES.txt
+          prerelease: true
+          tag_name: "${{ github.ref_name }}"
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            libsql-wasm-windows-latest/*
+            libsql-wasm-macos-latest/*
+            libsql-wasm-ubuntu-latest/*
+
