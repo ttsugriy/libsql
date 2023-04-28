@@ -40,7 +40,7 @@ jobs:
       - name: configure with Wasm (windows)
         if: matrix.os == 'windows-latest'
         run: |
-          ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.la
+          ./configure --enable-releasemode --enable-wasm-runtime && make libsqlite3.lib
       #  shell: msys2 {0}
   
 
