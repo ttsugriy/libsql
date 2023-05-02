@@ -52,7 +52,7 @@ jobs:
   
       - name: Zip artifact for deployment (linux/macos)
         if: matrix.os != 'windows-latest'
-        run: zip libsql-wasm-${{ matrix.os }}.zip liblibsql_wasm.a 
+        run: zip libsql-wasm-${{ matrix.os }}.zip .libs/liblibsql_wasm.a 
 
       - uses: actions/upload-artifact@v3
         with:
