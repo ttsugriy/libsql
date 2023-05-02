@@ -25,16 +25,16 @@ jobs:
         with:
           update: true
           install: mingw-w64-x86_64-toolchain mingw-w64-x86_64-sqlite3 gcc make base-devel
-          msystem: MINGW64
+          msystem: mingw64
           path-type: inherit
 
       - name: configure with Wasm (windows)
         if: matrix.os == 'windows-latest'
         run: |
           uname -a
-          echo $PATH
+          env
           export CARGO_BIN="$(which cargo)"
-          pacman -S --noconfirm --needed gcc make base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain 
+          pacman -S --noconfirm --needed gcc make base-devel mingw-w64-x86_64-toolchain 
           ./configure --enable-releasemode --enable-wasm-runtime
           gcc -shared -DWIN64 -DNDEBUG -D_WINDOWS -D_USRDLL -DNO_TCL -D_CRT_SECURE_NO_DEPRECATE -DTHREADSAFE=1 -DTEMP_STORE=1 -DSQLITE_MAX_EXPR_DEPTH=0 -m64 -I. sqlite3.c shell.c -o liblibsql_wasm.dll -Wl,--out-implib,liblibsql_wasm.a
           ls -lah
