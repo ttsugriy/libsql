@@ -35,7 +35,9 @@ jobs:
           env
           export CARGO_BIN="$(which cargo)"
           pacman -S --noconfirm --needed gcc make base-devel mingw-w64-x86_64-toolchain 
-          ./configure --enable-releasemode --enable-wasm-runtime
+          grep PACKAGE_VERSION ./configure
+          cat VERSION
+          bash -x ./configure --enable-releasemode --enable-wasm-runtime
           gcc -shared -DWIN64 -DNDEBUG -D_WINDOWS -D_USRDLL -DNO_TCL -D_CRT_SECURE_NO_DEPRECATE -DTHREADSAFE=1 -DTEMP_STORE=1 -DSQLITE_MAX_EXPR_DEPTH=0 -m64 -I. sqlite3.c shell.c -o liblibsql_wasm.dll -Wl,--out-implib,liblibsql_wasm.a
           ls -lah
         shell: msys2 {0}
